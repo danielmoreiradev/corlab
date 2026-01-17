@@ -1,16 +1,16 @@
-# **🧪 CorLab — Laboratório de Cores Pro**
+# **🧪 Cor Lab PRO — Laboratório de Cores Pro**
 
-O **CorLab** é um ecossistema de gerenciamento visual desenvolvido com auxílio de Inteligência Artificial para eliminar a fricção no workflow diário de desenvolvedores Front-end e Web Designers.
+O **Cor Lab PRO** é um ecossistema de gerenciamento visual desenvolvido com auxílio de Inteligência Artificial para eliminar a fricção no workflow diário de desenvolvedores Front-end e Web Designers.
 
-Diferente de geradores de cores comuns que entregam apenas o visual, o CorLab foca no **resultado real**: código limpo, acessibilidade técnica (WCAG) e persistência de dados.
+Diferente de geradores de cores comuns que entregam apenas o visual, o Cor Lab PRO foca no **resultado real**: código limpo, acessibilidade técnica (WCAG) e persistência de dados.
 
-## **🚀 Por que o CorLab?**
+## **🚀 Por que o Cor Lab PRO?**
 
-Este projeto foi concebido sob a premissa da **agilidade máxima**. Se você trabalha com WordPress, Elementor ou código puro, sabe que tempo é dinheiro. O CorLab automatiza as escolhas cromáticas e gera componentes prontos para o "copia e cola" estratégico.
+Este projeto foi concebido sob a premissa da **agilidade máxima**. Se você trabalha com WordPress, Elementor ou código puro, sabe que tempo é dinheiro. O Cor Lab PRO automatiza as escolhas cromáticas e gera componentes prontos para o "copia e cola" estratégico.
 
 ### **🧠 Desenvolvido com IA**
 
-O CorLab não foi apenas "programado"; ele foi arquitetado através de prompts estratégicos e lógica de IA para garantir que cada funcionalidade resolva uma dor real do desenvolvedor, desde a extração de cores de uma referência até a validação rigorosa de contraste.
+O Cor Lab PRO não foi apenas "programado"; ele foi arquitetado através de prompts estratégicos e lógica de IA para garantir que cada funcionalidade resolva uma dor real do desenvolvedor, desde a extração de cores de uma referência até a validação rigorosa de contraste.
 
 ## **🛠️ Funcionalidades de Elite**
 
@@ -63,4 +63,4 @@ O CorLab não foi apenas "programado"; ele foi arquitetado através de prompts e
 
 Desenvolvido para ser uma ferramenta de produtividade para a comunidade de desenvolvedores e designers que buscam **velocidade e precisão**.
 
-**CorLab** — *Design Strategy & Performance Engine.*
+**Cor Lab PRO** — *Design Strategy & Performance Engine.*
