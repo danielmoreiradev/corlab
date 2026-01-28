@@ -21,11 +21,10 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .pattern-dots-light { background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px); background-size: 20px 20px; }
         
-        /* Estilização Customizada para Sliders (Visibilidade Garantida) */
         input[type="range"] { 
             -webkit-appearance: none; 
             appearance: none;
-            background: #cbd5e1 !important; /* Trilho cinza bem visível */
+            background: #cbd5e1 !important; 
             height: 6px;
             border-radius: 999px;
             cursor: pointer; 
@@ -57,7 +56,10 @@
         const { useState, useEffect, useRef, useMemo } = React;
 
         // --- Core Utils ---
+        const isValidHex = (hex) => /^#([0-9A-F]{3}){1,2}$/i.test(hex);
+
         const hexToRgb = (hex) => {
+            if(!isValidHex(hex)) return { r: 0, g: 0, b: 0 };
             const r = parseInt(hex.slice(1, 3), 16);
             const g = parseInt(hex.slice(3, 5), 16);
             const b = parseInt(hex.slice(5, 7), 16);
@@ -75,7 +77,7 @@
         };
 
         const getContrastRatio = (hex1, hex2) => {
-            if (!hex1 || !hex2) return "1.00";
+            if (!isValidHex(hex1) || !isValidHex(hex2)) return "1.00";
             const l1 = getLuminance(...Object.values(hexToRgb(hex1))) + 0.05;
             const l2 = getLuminance(...Object.values(hexToRgb(hex2))) + 0.05;
             return (Math.max(l1, l2) / Math.min(l1, l2)).toFixed(2);
@@ -144,6 +146,9 @@
             const [savedPalettes, setSavedPalettes] = useState(() => JSON.parse(localStorage.getItem('corlab_db') || '[]'));
             const [namingModal, setNamingModal] = useState({ open: false, type: '', name: '' });
             
+            // New Input State
+            const [newHexInput, setNewHexInput] = useState('');
+
             // Lab State
             const [accBg, setAccBg] = useState('#6366F1');
             const [accFg, setAccFg] = useState('#FFFFFF');
@@ -183,6 +188,24 @@
             const contrast = useMemo(() => getContrastRatio(accBg, accFg), [accBg, accFg]);
 
             // --- Handlers ---
+            const handleAddHex = (e) => {
+                if(e.key === 'Enter' || e.type === 'click') {
+                    let hex = newHexInput.trim();
+                    if(!hex.startsWith('#')) hex = '#' + hex;
+                    if(isValidHex(hex)) {
+                        setColors([...colors, { id: Date.now(), hex: hex.toUpperCase(), opacity: 100 }]);
+                        setNewHexInput('');
+                        notify("Cor adicionada!");
+                    } else {
+                        notify("Código inválido!");
+                    }
+                }
+            };
+
+            const updateHexDirectly = (id, newHex) => {
+                setColors(colors.map(c => c.id === id ? { ...c, hex: newHex.toUpperCase() } : c));
+            };
+
             const handleImage = (e) => {
                 const file = e.target.files[0];
                 if(!file) return;
@@ -290,7 +313,6 @@
                         <div className="flex gap-2">
                             <label className="cursor-pointer bg-white border border-slate-200 p-2.5 rounded-xl hover:bg-slate-50 shadow-sm transition-all" title="Extrair de Imagem"><i className="fas fa-image text-indigo-600"></i><input type="file" className="hidden" accept="image/*" onChange={handleImage}/></label>
                             
-                            {/* Botões de Download JPG / TXT */}
                             <button onClick={() => setNamingModal({open:true, type:'txt', name:''})} className="hidden md:flex bg-white border border-slate-200 p-2.5 rounded-xl hover:bg-slate-50 shadow-sm transition-all text-indigo-600" title="Baixar .TXT"><i className="fas fa-file-lines"></i></button>
                             <button onClick={() => setNamingModal({open:true, type:'jpg', name:''})} className="hidden md:flex bg-white border border-slate-200 p-2.5 rounded-xl hover:bg-slate-50 shadow-sm transition-all text-indigo-600" title="Baixar .JPG"><i className="fas fa-file-image"></i></button>
                             
@@ -320,33 +342,58 @@
                             {/* 1. PALETA & HUB */}
                             {activeTab === 'palette' && (
                                 <div className="space-y-12 animate-in fade-in">
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                                         <h2 className="text-xl font-black uppercase tracking-tight text-slate-900">Painel Cromático</h2>
-                                        <div className="flex gap-2">
+                                        
+                                        <div className="flex flex-wrap gap-2 items-center">
+                                            {/* NOVO CAMPO DE ADIÇÃO POR CÓDIGO */}
+                                            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 focus-within:border-indigo-400 transition-all">
+                                                <span className="text-slate-400 font-bold text-xs mr-1">#</span>
+                                                <input 
+                                                    type="text" 
+                                                    value={newHexInput.replace('#', '')} 
+                                                    onChange={e => setNewHexInput(e.target.value)} 
+                                                    onKeyDown={handleAddHex}
+                                                    placeholder="FFFFFF"
+                                                    className="bg-transparent outline-none text-[10px] font-black uppercase w-20 text-slate-700"
+                                                />
+                                                <button onClick={handleAddHex} className="text-indigo-600 p-1 hover:scale-110 transition-transform"><i className="fas fa-plus-circle"></i></button>
+                                            </div>
+
                                             <button onClick={() => generateHarmony('comp')} className="px-3 py-2 border border-slate-200 rounded-lg text-[9px] font-black uppercase hover:bg-slate-50 transition-all">Complementar</button>
                                             <button onClick={() => generateHarmony('tri')} className="px-3 py-2 border border-slate-200 rounded-lg text-[9px] font-black uppercase hover:bg-slate-50 transition-all">Tríade</button>
                                             <button onClick={() => setColors([...colors, {id:Date.now(), hex:'#94a3b8', opacity:100}])} className="p-2.5 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"><i className="fas fa-plus"></i></button>
                                         </div>
                                     </div>
+
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                         {colors.map(c => (
                                             <div key={c.id} className="bg-slate-50 p-4 rounded-3xl border border-slate-200 group hover:border-indigo-400 transition-all">
                                                 <div className="h-28 w-full rounded-2xl mb-4 shadow-sm cursor-pointer relative overflow-hidden" style={{ backgroundColor: c.hex, opacity: c.opacity/100 }} onClick={() => copy(c.hex)}>
                                                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/10 transition-opacity text-white"><i className="fas fa-copy"></i></div>
                                                 </div>
-                                                <input type="color" value={c.hex} onChange={e => setColors(colors.map(col => col.id === c.id ? {...col, hex: e.target.value} : col))} className="w-full h-10 bg-transparent border-none cursor-pointer mb-2"/>
+                                                <input type="color" value={c.hex} onChange={e => updateHexDirectly(c.id, e.target.value)} className="w-full h-10 bg-transparent border-none cursor-pointer mb-2"/>
                                                 
-                                                {/* Controle de Opacidade Reintegrado */}
+                                                {/* Controle de Opacidade */}
                                                 <div className="space-y-2 mb-4"><div className="flex justify-between text-[8px] font-black text-slate-400 uppercase"><span>Opacidade</span><span>{c.opacity}%</span></div><input type="range" min="0" max="100" value={c.opacity} onChange={e => setColors(colors.map(col => col.id === c.id ? {...col, opacity: parseInt(e.target.value)} : col))}/></div>
                                                 
                                                 <div className="flex justify-between items-center mb-4">
-                                                    <span className="text-[11px] font-mono font-black uppercase text-slate-600">{c.hex}</span>
+                                                    {/* INPUT DE EDIÇÃO MANUAL DO HEXADECIMAL */}
+                                                    <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-slate-100 focus-within:border-indigo-300">
+                                                        <input 
+                                                            type="text" 
+                                                            value={c.hex} 
+                                                            onChange={e => updateHexDirectly(c.id, e.target.value)} 
+                                                            className="text-[11px] font-mono font-black uppercase text-slate-600 outline-none w-20"
+                                                        />
+                                                    </div>
                                                     <button onClick={() => setColors(colors.filter(col => col.id !== c.id))} className="text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-can"></i></button>
                                                 </div>
                                                 <div className="flex gap-1.5"><button onClick={() => setAccBg(c.hex)} className="flex-1 py-1.5 bg-white border border-slate-200 text-[8px] font-black uppercase rounded-md hover:bg-slate-100 transition-all">P. Fundo</button><button onClick={() => setAccFg(c.hex)} className="flex-1 py-1.5 bg-white border border-slate-200 text-[8px] font-black uppercase rounded-md hover:bg-slate-100 transition-all">Texto</button></div>
                                             </div>
                                         ))}
                                     </div>
+
                                     <section className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 shadow-inner">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
                                             <div className="space-y-6">
@@ -395,7 +442,6 @@
                                                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3"><div className="flex justify-between text-[9px] font-black uppercase text-slate-400">Ângulo do Degradê <span>{gradAngle}°</span></div><input type="range" min="0" max="360" value={gradAngle} onChange={e => setGradAngle(e.target.value)}/></div>
                                             )}
                                             
-                                            {/* Classe CSS do Gradiente Reintegrada */}
                                             <div className="space-y-2"><label className="text-[9px] font-black text-slate-400 uppercase px-1">Classe CSS do Gradiente</label><input type="text" value={gradClass} onChange={e => setGradClass(e.target.value)} className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-xs font-mono outline-none focus:border-indigo-400 transition-all" placeholder="Nome da classe..."/></div>
                                         </div>
                                     </div>
@@ -451,7 +497,6 @@
                                         </div>
                                     </div>
                                     
-                                    {/* Campo de Classe do Botão Reintegrado */}
                                     <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-200 flex flex-col sm:flex-row gap-4 items-center justify-between shadow-sm">
                                         <div className="flex-1 w-full"><label className="text-[9px] font-black text-slate-400 uppercase px-1">Classe CSS Customizada</label><input type="text" value={btn.customClass} onChange={e => setBtn({...btn, customClass: e.target.value.replace(/\s+/g, '-')})} className="w-full mt-1 p-4 bg-white border border-slate-200 rounded-2xl text-xs font-mono outline-none focus:border-indigo-400 transition-all"/></div>
                                         <div className="h-10 w-[1px] bg-slate-200 mx-4 hidden sm:block"></div>
@@ -498,7 +543,7 @@
                     </main>
 
                     <footer className="fixed bottom-0 z-50 w-full bg-white/80 backdrop-blur-md border-t border-slate-200 px-8 py-4 hidden md:flex justify-between items-center text-slate-400 shadow-2xl">
-                        <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-[0.3em]"><span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-200"></div> Engine v4.1 Estável</span><span className="text-slate-200">|</span><span>Web Design Performance Engine</span></div>
+                        <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-[0.3em]"><span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-200"></div> Engine v4.2 Estável</span><span className="text-slate-200">|</span><span>Web Design Performance Engine</span></div>
                         <div className="flex gap-6 items-center opacity-40 hover:opacity-100 transition-opacity"><i className="fas fa-desktop cursor-pointer hover:text-indigo-600"></i><i className="fas fa-mobile-screen cursor-pointer hover:text-indigo-600"></i><div className="h-4 w-[1px] bg-slate-200 mx-2"></div><p className="text-[8px] font-black uppercase tracking-widest">ADS Workflow</p></div>
                     </footer>
                 </div>
